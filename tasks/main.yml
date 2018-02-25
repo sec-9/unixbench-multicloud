@@ -19,11 +19,17 @@
     - boto3
     - botocore
 
-- name: download UnixBench
-  get_url: 
-    url: https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/byte-unixbench/UnixBench{{ unix_bench_version }}.tgz
-    dest: /opt/UnixBench{{ unix_bench_version }}.tgz
-    mode: 755
+# - name: download UnixBench
+#   get_url: 
+#     url: https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/byte-unixbench/UnixBench{{ unix_bench_version }}.tgz
+#     dest: /opt/UnixBench{{ unix_bench_version }}.tgz
+#     mode: 755
+
+- name: copy UnixBench
+  copy:
+    src: UnixBench{{ unix_bench_version }}.tgz
+    dest: /opt
+    mode: 0755
 
 - stat: path="/opt/UnixBench"
   register: bench_dir
@@ -34,28 +40,28 @@
     - (cd /opt/ && tar xzf UnixBench{{ unix_bench_version }}.tgz && cd UnixBench && make)
   when: not bench_dir.stat.exists
 
-- name: UnixBench run
-  shell: "cd /opt/UnixBench && ./Run"
+# - name: UnixBench run
+#   shell: "cd /opt/UnixBench && ./Run"
 
-- name: list files
-  shell: "ls /opt/UnixBench/results"
-  register: results_files
+# - name: list files
+#   shell: "ls /opt/UnixBench/results"
+#   register: results_files
 
-- name: Create a s3 bucket
-  aws_s3:
-    aws_access_key: "{{ aws_access_key }}"
-    aws_secret_key: "{{ aws_secret_key }}"
-    bucket: "{{ bucket }}"
-    region: "{{ region }}"
-    mode: create
+# - name: Create a s3 bucket
+#   aws_s3:
+#     aws_access_key: "{{ aws_access_key }}"
+#     aws_secret_key: "{{ aws_secret_key }}"
+#     bucket: "{{ bucket }}"
+#     region: "{{ region }}"
+#     mode: create
 
-- name: puts result files to s3
-  aws_s3:
-    aws_access_key: "{{ aws_access_key }}"
-    aws_secret_key: "{{ aws_secret_key }}"
-    region: "{{ region }}"
-    bucket: "{{ bucket }}"
-    object: /unixbench/{{ inventory_hostname }}/opt/UnixBench/results/{{ item }}
-    src: /opt/UnixBench/Makefile
-    mode: put
-  with_items: "{{ results_files.stdout_lines }}"
+# - name: puts result files to s3
+#   aws_s3:
+#     aws_access_key: "{{ aws_access_key }}"
+#     aws_secret_key: "{{ aws_secret_key }}"
+#     region: "{{ region }}"
+#     bucket: "{{ bucket }}"
+#     object: /unixbench/{{ inventory_hostname }}/opt/UnixBench/results/{{ item }}
+#     src: /opt/UnixBench/Makefile
+#     mode: put
+#   with_items: "{{ results_files.stdout_lines }}"
